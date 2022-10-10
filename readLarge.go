@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"sync"
@@ -135,11 +136,64 @@ func Process(f *os.File, start time.Time, end time.Time) error {
 
 		wg.Add(1)
 		go func() {
-			ProcessChunck(buf, &linesPool, &stringPool, start, end)
+			ProcessChunk(buf, &linesPool, &stringPool, start, end)
 			wg.Done()
 		}()
 	}
 
 	wg.Wait()
 	return nil
+}
+
+func ProcessChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool, start time.Time, end time.Time) {
+
+	var wg2 sync.WaitGroup
+
+	logs := stringPool.Get().(string)
+	logs = string(chunk)
+
+	linesPool.Put(chunk)
+
+	logSlice := strings.Split(logs, "\n")
+
+	stringPool.Put(logs)
+
+	chunkSize := 300
+	n := len(logSlice)
+	noOfThread := n / chunkSize
+
+	if n%chunkSize != 0 {
+		noOfThread++
+	}
+
+	for i := 0; i < (noOfThread); i++ {
+
+		wg2.Add(1)
+		go func(s int, e int) {
+			defer wg2.Done() // to avoid deadlocks
+			for i := s; i < e; i++ {
+				text := logSlice[i]
+				if len(text) == 0 {
+					continue
+				}
+				logSlice := strings.SplitN(text, ",", 2)
+				logCreationTimeString := logSlice[0]
+
+				logCreationTime, err := time.Parse("2006-01-02T15:04:05.0000Z", logCreationTimeString)
+				if err != nil {
+					fmt.Printf("\nCould not parse the time : %s for log : %v", logCreationTimeString, text)
+					return
+				}
+
+				if logCreationTime.After(start) && logCreationTime.Before(end) {
+					fmt.Println(text)
+				}
+
+			}
+		}(i*chunkSize, int(math.Min(float64((i+1)*chunkSize), float64(len(logSlice)))))
+	}
+
+	wg2.Wait()
+	logSlice = nil
+
 }
