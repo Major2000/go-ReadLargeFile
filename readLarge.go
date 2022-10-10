@@ -35,7 +35,7 @@ func main() {
 
 	queryStartTime, err := time.Parse("200601-02T15:04:05.0000Z", startTimeArg)
 	if err != nil {
-		fmt.Println("Could not parse the start time", finishTimeArg)
+		fmt.Println("Could not parse the start time", startTimeArg)
 		return
 	}
 
