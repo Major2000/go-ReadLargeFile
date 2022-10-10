@@ -33,7 +33,7 @@ func main() {
 
 	defer file.Close() // close file after checking err
 
-	queryStartTime, err := time.Parse("200601-02T15:04:05.0000Z", finishTimeArg)
+	queryStartTime, err := time.Parse("200601-02T15:04:05.0000Z", startTimeArg)
 	if err != nil {
 		fmt.Println("Could not parse the finish time", finishTimeArg)
 		return
