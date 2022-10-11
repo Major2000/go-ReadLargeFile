@@ -15,14 +15,14 @@ func main() {
 
 	s := time.Now()
 	args := os.Args[1:]
-	if len(args) != 6 { // for format  LogExtractor.exe -f "From Time" -t "To Time" -i "Log file directory location"
+	if len(args) != 6 { // for format  LogExtractor.exe -f "file directory location"
 		fmt.Println("Please give proper command line arguments")
 		return
 	}
 
-	startTimeArg := args[1]
-	finishTimeArg := args[3]
-	fileName := args[5]
+	//startTimeArg := args[1]
+	//finishTimeArg := args[3]
+	fileName := args[1]
 
 	file, err := os.Open(fileName)
 
@@ -33,17 +33,17 @@ func main() {
 
 	defer file.Close() // close file after checking err
 
-	queryStartTime, err := time.Parse("200601-02T15:04:05.0000Z", startTimeArg)
-	if err != nil {
-		fmt.Println("Could not parse the finish time", finishTimeArg)
-		return
-	}
+	//queryStartTime, err := time.Parse("200601-02T15:04:05.0000Z", startTimeArg)
+	//if err != nil {
+	//	fmt.Println("Could not parse the finish time", finishTimeArg)
+	//	return
+	//}
 
-	queryFinishTime, err := time.Parse("2006-01-02T15:04:05.0000Z", finishTimeArg)
-	if err != nil {
-		fmt.Println("Could not parse the finish time", finishTimeArg)
-		return
-	}
+	//queryFinishTime, err := time.Parse("2006-01-02T15:04:05.0000Z", finishTimeArg)
+	//if err != nil {
+	//	fmt.Println("Could not parse the finish time", finishTimeArg)
+	//	return
+	//}
 
 	filestat, err := file.Stat()
 	if err != nil {
@@ -79,23 +79,23 @@ func main() {
 		return
 	}
 
-	logSlice := strings.SplitN(string(lastLine), ",", 2)
-	logCreationTimeString := logSlice[0]
+	//logSlice := strings.SplitN(string(lastLine), ",", 2)
+	//logCreationTimeString := logSlice[0]
 
-	lastLogCreationTime, err := time.Parse("2006-01-02T15:04:05.0000Z", logCreationTimeString)
-	if err != nil {
-		fmt.Println("Cannot parse time :", err)
-	}
+	//lastLogCreationTime, err := time.Parse("2006-01-02T15:04:05.0000Z", logCreationTimeString)
+	//if err != nil {
+	//	fmt.Println("Cannot parse time :", err)
+	//}
 
-	if lastLogCreationTime.After(queryStartTime) && lastLogCreationTime.Before(queryFinishTime) {
-		Process(file, queryStartTime, queryFinishTime)
-	}
+	//if lastLogCreationTime.After(queryStartTime) && lastLogCreationTime.Before(queryFinishTime) {
+	Process(file)
+	//}
 
 	fmt.Println("\nTime taken -", time.Since(s))
 
 }
 
-func Process(f *os.File, start time.Time, end time.Time) error {
+func Process(f *os.File /** start time.Time, end time.Time **/) error {
 
 	linesPool := sync.Pool{New: func() interface{} {
 		lines := make([]byte, 250*1024)
@@ -136,7 +136,7 @@ func Process(f *os.File, start time.Time, end time.Time) error {
 
 		wg.Add(1)
 		go func() {
-			ProcessChunk(buf, &linesPool, &stringPool, start, end)
+			ProcessChunk(buf, &linesPool, &stringPool /**start, end**/)
 			wg.Done()
 		}()
 	}
@@ -145,7 +145,7 @@ func Process(f *os.File, start time.Time, end time.Time) error {
 	return nil
 }
 
-func ProcessChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool, start time.Time, end time.Time) {
+func ProcessChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool /** start time.Time, end time.Time**/) {
 
 	var wg2 sync.WaitGroup
 
@@ -176,18 +176,18 @@ func ProcessChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool, sta
 				if len(text) == 0 {
 					continue
 				}
-				logSlice := strings.SplitN(text, ",", 2)
-				logCreationTimeString := logSlice[0]
-
-				logCreationTime, err := time.Parse("2006-01-02T15:04:05.0000Z", logCreationTimeString)
-				if err != nil {
-					fmt.Printf("\nCould not parse the time : %s for log : %v", logCreationTimeString, text)
-					return
-				}
-
-				if logCreationTime.After(start) && logCreationTime.Before(end) {
-					fmt.Println(text)
-				}
+				//logSlice := strings.SplitN(text, ",", 2)
+				//logCreationTimeString := logSlice[0]
+				//
+				//logCreationTime, err := time.Parse("2006-01-02T15:04:05.0000Z", logCreationTimeString)
+				//if err != nil {
+				//	fmt.Printf("\nCould not parse the time : %s for log : %v", logCreationTimeString, text)
+				//	return
+				//}
+				//
+				//if logCreationTime.After(start) && logCreationTime.Before(end) {
+				//	fmt.Println(text)
+				//}
 
 			}
 		}(i*chunkSize, int(math.Min(float64((i+1)*chunkSize), float64(len(logSlice)))))
