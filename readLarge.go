@@ -15,7 +15,7 @@ func main() {
 
 	s := time.Now()
 	args := os.Args[1:]
-	if len(args) != 6 { // for format  LogExtractor.exe -f "file directory location"
+	if len(args) != 2 { // for format  LogExtractor.exe -f "file directory location"
 		fmt.Println("Please give proper command line arguments")
 		return
 	}
